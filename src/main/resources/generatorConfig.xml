@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd" >
+<generatorConfiguration>
+	<context id="mysql_context" targetRuntime="MyBatis3">
+		<jdbcConnection driverClass="com.mysql.jdbc.Driver"
+			connectionURL="jdbc:mysql://10.0.2.26:3306/bhi?autoReconnect=true&amp;characterEncoding=UTF-8"
+			userId="spider" password="spider" />
+		<javaModelGenerator targetPackage="com.unbank.mybatis.vo"
+			targetProject="ubk_bhi_spider/src" />
+		<sqlMapGenerator targetPackage="com.unbank.mybatis.mapper"
+			targetProject="ubk_bhi_spider/src" />
+		<javaClientGenerator targetPackage="com.unbank.mybatis.client"
+			targetProject="ubk_bhi_spider/src" type="XMLMAPPER" />
+
+
+
+		<table schema="bhi" tableName="bhi_design" domainObjectName="BhiDesign">
+		</table>
+		<table schema="bhi" tableName="bhi_feasibility_study"
+			domainObjectName="BhiFeasibilityStudy">
+		</table>
+		<table schema="bhi" tableName="bhi_other" domainObjectName="BhiOther">
+		</table>
+		<table schema="bhi" tableName="bhi_owner" domainObjectName="BhiOwner">
+		</table>
+		<table schema="bhi" tableName="bhi_plant" domainObjectName="BhiPlant">
+		</table>
+		<table schema="bhi" tableName="bhi_primary_design"
+			domainObjectName="BhiPrimaryDesign">
+		</table>
+		<table schema="bhi" tableName="bhi_pro" domainObjectName="BhiPro">
+			<generatedKey column="id" sqlStatement="SELECT LAST_INSERT_ID()"
+				identity="true" type="post" />
+		</table>
+		<table schema="bhi" tableName="bhi_survey" domainObjectName="BhiSurvey">
+		</table>
+		<table schema="bhi" tableName="bhi_construction"
+			domainObjectName="BhiConstruction">
+		</table>
+		<table schema="bhi" tableName="bhi_environmental_assessment"
+			domainObjectName="BhiEnvironmentalAssessment">
+		</table>
+
+	</context>
+
+</generatorConfiguration>

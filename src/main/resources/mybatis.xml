@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>   
+<!DOCTYPE configuration   
+    PUBLIC "-//mybatis.org//DTD Config 3.0//EN"   
+    "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<typeAliases>
+		<typeAlias alias="SQLAdapter" type="com.unbank.mybatis.entity.SQLAdapter" />
+		<typeAlias alias="BhiPro" type="com.unbank.mybatis.vo.BhiPro" />
+		<typeAlias alias="BhiDesign" type="com.unbank.mybatis.vo.BhiDesign" />
+		<typeAlias alias="BhiFeasibilityStudy" type="com.unbank.mybatis.vo.BhiFeasibilityStudy" />
+		<typeAlias alias="BhiOther" type="com.unbank.mybatis.vo.BhiOther" />
+		<typeAlias alias="BhiOwner" type="com.unbank.mybatis.vo.BhiOwner" />
+		<typeAlias alias="BhiPlant" type="com.unbank.mybatis.vo.BhiPlant" />
+		<typeAlias alias="BhiPrimaryDesign" type="com.unbank.mybatis.vo.BhiPrimaryDesign" />
+		<typeAlias alias="BhiSurvey" type="com.unbank.mybatis.vo.BhiSurvey" />
+		<typeAlias alias="BhiConstruction" type="com.unbank.mybatis.vo.BhiConstruction" />
+		<typeAlias alias="BhiEnvironmentalAssessment"
+			type="com.unbank.mybatis.vo.BhiEnvironmentalAssessment" />
+	</typeAliases>
+	<!--数据源配置 这块用 BD2数据库 -->
+	<environments default="development">
+		<!--采集数据库 -->
+		<environment id="development">
+			<transactionManager type="jdbc" />
+			<dataSource type="POOLED">
+				<property name="driver" value="com.mysql.jdbc.Driver" />
+				<property name="url"
+					value="jdbc:mysql://10.0.0.50:3306/bhi?allowMultiQueries=true" />
+				<property name="username" value="spider" />
+				<property name="password" value="spider" />
+			</dataSource>
+		</environment>
+	</environments>
+	<mappers>
+		<!--userMapper.xml装载进来 同等于把“dao”的实现装载进来 -->
+		<mapper resource="com/unbank/mybatis/mapper/SQLAdapterMapper.xml" />
+		<mapper resource="com/unbank/mybatis/mapper/BhiProMapper.xml" />
+		<mapper resource="com/unbank/mybatis/mapper/BhiDesignMapper.xml" />
+		<mapper resource="com/unbank/mybatis/mapper/BhiFeasibilityStudyMapper.xml" />
+		<mapper resource="com/unbank/mybatis/mapper/BhiOtherMapper.xml" />
+		<mapper resource="com/unbank/mybatis/mapper/BhiOwnerMapper.xml" />
+		<mapper resource="com/unbank/mybatis/mapper/BhiPlantMapper.xml" />
+		<mapper resource="com/unbank/mybatis/mapper/BhiPrimaryDesignMapper.xml" />
+		<mapper resource="com/unbank/mybatis/mapper/BhiSurveyMapper.xml" />
+		<mapper resource="com/unbank/mybatis/mapper/BhiConstructionMapper.xml" />
+		<mapper
+			resource="com/unbank/mybatis/mapper/BhiEnvironmentalAssessmentMapper.xml" />
+	</mappers>
+</configuration> 

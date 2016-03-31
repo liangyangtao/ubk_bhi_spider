@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+
+	<bean id="startBhiMkXlsQuartzJobBean" class="com.unbank.quartz.StartBhiMkXlsQuartzJobBean"
+		autowire="byName">
+	</bean>
+	<bean id="startBhiSpiderQuartzJobBean" class="com.unbank.quartz.StartBhiSpiderQuartzJobBean"
+		autowire="byName">
+	</bean>
+	<!-- 定时检测内容 -->
+	<bean id="startBhiMkXlsQuartzJobTask"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<!-- 调用的类 -->
+		<property name="targetObject" ref="startBhiMkXlsQuartzJobBean">
+		</property>
+		<!-- 调用类中的方法 -->
+		<property name="targetMethod" value="executeInternal">
+		</property>
+	</bean>
+	<bean id="startBhiSpiderQuartzJobTask"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<!-- 调用的类 -->
+		<property name="targetObject" ref="startBhiSpiderQuartzJobBean">
+		</property>
+		<!-- 调用类中的方法 -->
+		<property name="targetMethod" value="executeInternal">
+		</property>
+	</bean>
+
+
+	<!-- 任务触发器 -->
+	<bean id="startBhiMkXlsQuartzTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="startBhiMkXlsQuartzJobTask" />
+		</property>
+		<property name="cronExpression">
+			<value>01 10 03 * * ?</value>
+		</property>
+	</bean>
+	<bean id="startBhiSpiderQuartzTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail">
+			<ref bean="startBhiSpiderQuartzJobTask" />
+		</property>
+		<property name="cronExpression">
+			<value>01 01 21 * * ?</value>
+		</property>
+	</bean>
+	<!-- 任务调度入口 -->
+
+	<bean lazy-init="false"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<list>
+				<ref bean="startBhiMkXlsQuartzTrigger" />
+				<ref bean="startBhiSpiderQuartzTrigger" />
+			</list>
+		</property>
+	</bean>
+
+</beans>
