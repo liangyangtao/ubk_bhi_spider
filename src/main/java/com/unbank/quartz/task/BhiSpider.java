@@ -1,6 +1,9 @@
 package com.unbank.quartz.task;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +12,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -24,23 +26,27 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import com.unbank.fetch.HttpClientBuilder;
 import com.unbank.paser.detail.BHIDetailPaser;
 import com.unbank.tools.SimpleTools;
-import com.unbank.tools.Values;
 
 public class BhiSpider {
 
-	private static HttpHost proxy = new HttpHost(Values.v.PROXYIP,
-			Integer.parseInt(Values.v.PROXYPORT));
+	// private static HttpHost proxy = new HttpHost(Values.v.PROXYIP,
+	// Integer.parseInt(Values.v.PROXYPORT));
 	private static RequestConfig requestConfig = RequestConfig.custom()
 			.setSocketTimeout(30000).setConnectTimeout(30000)
 			.setStaleConnectionCheckEnabled(true)
-			.setCircularRedirectsAllowed(true).setProxy(proxy)
+			.setCircularRedirectsAllowed(true)
+			// .setProxy(proxy)
 			.setMaxRedirects(50).build();
 
 	private static BasicCookieStore cookieStore = new BasicCookieStore();
+
+	private static String headerCookie = "";
 
 	public static void printCookies() {
 		System.out.println("---查看当前Cookie---");
@@ -84,35 +90,70 @@ public class BhiSpider {
 		PoolingHttpClientConnectionManager poolingHttpClientConnectionManager = new PoolingHttpClientConnectionManager();
 		HttpClientBuilder httpClientBuilder = new HttpClientBuilder(false,
 				poolingHttpClientConnectionManager, cookieStore);
+
 		CloseableHttpClient httpClient = httpClientBuilder.getHttpClient();
-		loginbhi(httpClient);
-		// vip
 		List<String> urls = getVipProjectsUrls(startTime, endTime, httpClient,
-				getCookiesString());
-		analyzerVipPaper(urls, httpClient, getCookiesString());
-		// 普通
+				headerCookie);
 		List<String> urls2 = getProjectsUrls(startTime, endTime, httpClient,
-				getCookiesString());
-		analyzerPaper(urls2, httpClient, getCookiesString());
+				headerCookie);
+		loginbhi(httpClient);
+
+		System.out.println(headerCookie);
+		// headerCookie
+		// ="LogUser=gsJGLZmi92LaFq5nxFn4vgBP/a8k7h90uPB54g+TXeY=; ASP.NET_SessionId=sblx2xjbn1m2kel4uv2bxakw; Hm_lvt_8d994d177d2158b74a6011c3839d1a20=1467711069; Hm_lpvt_8d994d177d2158b74a6011c3839d1a20=1467711778";
+		if (headerCookie.contains("LogUser")) {
+			System.out.println("登陆成功");
+		} else {
+			System.out.println("登陆失败");
+			return;
+		}
+		getRecodPage(httpClient,
+				"http://projectinfo.bhi.com.cn/Projects/ProjectNList.aspx");
+		// vip
+		//
+		analyzerVipPaper(urls, httpClient, headerCookie);
+		// 普通
+
+		analyzerPaper(urls2, httpClient, headerCookie);
+
+	}
+
+	private static void getRecodPage(CloseableHttpClient httpClient, String a) {
+		String url = "http://projectinfo.bhi.com.cn/Login/RecordPage.ashx";
+
+		Map<String, String> aaa = new HashMap<String, String>();
+		aaa.put("url", a);
+		System.out.println(post(httpClient, url, aaa, "utf-8", headerCookie));
 
 	}
 
 	private static void loginbhi(CloseableHttpClient httpClient) {
+		// http://www.bhi.com.cn/Login/login.aspx
 		String loginurl = "http://www.bhi.com.cn/Login/login.aspx";
-		getHtml(httpClient, loginurl, "utf-8", getCookiesString());
+		// http://www.bhi.com.cn/Login/login.aspx
+		String html = getHtml(httpClient, loginurl, "utf-8", getCookiesString());
 		printCookies();
-		String codeurl = "http://www.bhi.com.cn/Public/IsValid.ashx";
+		Document loginDocument = Jsoup.parse(html, loginurl);
+		Element checkElement = loginDocument.select("#loginsafecode").first();
+		String codeurl = checkElement.absUrl("src");
+		// http://www.bhi.com.cn/Public/IsValid.ashx?num=537744831
+		// http://www.bhi.com.cn/Public/IsValid.ashx?num=40452815
+		// String codeurl = "http://www.bhi.com.cn/Public/IsValid.ashx";
 		getHtml(httpClient, codeurl, "utf-8", getCookiesString());
 		printCookies();
 		String checkCode = getCheckCode();
-		String checkcodeurl = "http://www.bhi.com.cn/Public/IsExistValid.aspx";
+
+		String checkcodeurl = "http://www.bhi.com.cn/Public/IsExistValid.aspx?_="
+				+ new Date().getTime();
 		getHtml(httpClient, checkcodeurl, "utf-8", getCookiesString());
 		printCookies();
+
 		String tourl = "http://www.bhi.com.cn/Login/login.ashx?prev=";
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("name", "unbank");
-		params.put("pwd", "chengxin163");
+		params.put("pwd", "");
 		params.put("code", checkCode);
+		params.put("method", "popup");
 		post(httpClient, tourl, params, "utf-8", getCookiesString());
 		printCookies();
 		String lourl = "http://www.bhi.com.cn/Login/login.ashx?prev=";
@@ -124,6 +165,7 @@ public class BhiSpider {
 		String lourl3 = "http://www.bhi.com.cn/Login/showmsg.aspx?prev=";
 		getHtml(httpClient, lourl3, "utf-8", getCookiesString());
 		printCookies();
+		headerCookie = getCookiesString();
 	}
 
 	public static List<String> getVipProjectsUrls(String startTime,
@@ -132,19 +174,12 @@ public class BhiSpider {
 		List<String> urls = new ArrayList<String>();
 		while (true) {
 			try {
-				String url = "http://www.bhi.com.cn/solr/SolrProject.ashx?solr_core=0&solr_rows=30&solr_rsort=0&solr_keywords=%25u8BF7%25u8F93%25u5165%25u5173%25u952E%25u8BCD&solr_area=&solr_industry=&solr_date=0&solr_cbcolumns=,vip&solr_currentPage="
+				String url = "http://projectinfo.bhi.com.cn/solr/SolrProject.ashx?solr_core=0&solr_rows=30&solr_rsort=0&solr_keywords=&solr_area=&solr_industry=&solr_date=-366&solr_cbcolumns=1&solr_currentPage="
 						+ i
-						+ "&solr_fund=&solr_hezhun=&solr_shenpi=&solr_beian=&solr_xingzhi=&solr_laiyuan=&solr_suoyou=&_=1425973128841";
+						+ "&solr_fund=&solr_jinzhan=&solr_xmxingzhi=&solr_qyxingzhi=&solr_leibie=&solr_fenlei=";
+
 				i++;
-				String html = getHtml(httpClient, url, "utf-8", getCookiesString());
-				String cookieString  = getCookiesString();
-				if(cookieString.contains("LogUser")){
-					
-				}else{
-					Thread.sleep(10*1000);
-					loginbhi(httpClient);
-				}
-				html = getHtml(httpClient, url, "utf-8", getCookiesString());
+				String html = getHtml(httpClient, url, "utf-8", "");
 				JSONObject json = JSONObject.fromObject(html);
 				JSONArray keywordJsonArray = json.getJSONArray("docs");
 				boolean isbreak = false;
@@ -162,7 +197,7 @@ public class BhiSpider {
 					}
 					String href = Jsoup.parse(children.get("title").toString())
 							.select("a").first().attr("href");
-					String tempURL = "http://www.bhi.com.cn" + href;
+					String tempURL = "http://projectinfo.bhi.com.cn" + href;
 					System.out.println(tempURL);
 					urls.add(tempURL);
 				}
@@ -183,19 +218,12 @@ public class BhiSpider {
 		for (String url : urls) {
 			System.out.println(url);
 			try {
-				String html = getHtml(httpClient, url, "utf-8",getCookiesString() );
+				String html = getHtml(httpClient, url, "utf-8", cookie);
 				if (html == null || html.isEmpty()) {
 					continue;
 				}
-				String cookieString  = getCookiesString();
-				if(cookieString.contains("LogUser")){
-					
-				}else{
-					Thread.sleep(10*1000);
-					loginbhi(httpClient);
-				}
-			    html = getHtml(httpClient, url, "utf-8", getCookiesString());
 				new BHIDetailPaser().analyzerVipPaper(html, url);
+				getRecodPage(httpClient, url);
 				try {
 					Thread.sleep(3000);
 				} catch (InterruptedException e) {
@@ -216,19 +244,11 @@ public class BhiSpider {
 		List<String> urls = new ArrayList<String>();
 		while (true) {
 			try {
-				String url = "http://www.bhi.com.cn/solr/SolrProject.ashx?solr_core=0&solr_rows=30&solr_rsort=0&solr_keywords=%25u8BF7%25u8F93%25u5165%25u5173%25u952E%25u8BCD&solr_area=&solr_industry=&solr_date=0&solr_cbcolumns=%E6%8B%9F&solr_currentPage="
+				String url = "http://projectinfo.bhi.com.cn/solr/SolrProject.ashx?solr_core=0&solr_rows=30&solr_rsort=0&solr_keywords=&solr_area=&solr_industry=&solr_date=-366&solr_cbcolumns=0&solr_currentPage="
 						+ i
-						+ "&solr_fund=&solr_hezhun=&solr_shenpi=&solr_beian=&solr_xingzhi=&solr_laiyuan=&solr_suoyou=&_=1426669089669";
+						+ "&solr_fund=&solr_jinzhan=&solr_xmxingzhi=&solr_qyxingzhi=&solr_leibie=&solr_fenlei=";
 				i++;
-				String html = getHtml(httpClient, url, "utf-8", getCookiesString());
-				String cookieString  = getCookiesString();
-				if(cookieString.contains("LogUser")){
-					
-				}else{
-					Thread.sleep(10*1000);
-					loginbhi(httpClient);
-				}
-				html = getHtml(httpClient, url, "utf-8", getCookiesString());
+				String html = getHtml(httpClient, url, "utf-8", "");
 				JSONObject json = JSONObject.fromObject(html);
 				JSONArray keywordJsonArray = json.getJSONArray("docs");
 				boolean isbreak = false;
@@ -246,7 +266,7 @@ public class BhiSpider {
 					}
 					String href = Jsoup.parse(children.get("title").toString())
 							.select("a").first().attr("href");
-					String tempURL = "http://www.bhi.com.cn" + href;
+					String tempURL = "http://projectinfo.bhi.com.cn" + href;
 					System.out.println(tempURL);
 					urls.add(tempURL);
 				}
@@ -267,19 +287,12 @@ public class BhiSpider {
 		for (String url : urls) {
 			System.out.println(url);
 			try {
-				String html = getHtml(httpClient, url, "utf-8", getCookiesString());
+				String html = getHtml(httpClient, url, "utf-8", cookie);
 				if (html == null || html.isEmpty()) {
 					continue;
 				}
-				String cookieString  = getCookiesString();
-				if(cookieString.contains("LogUser")){
-					
-				}else{
-					Thread.sleep(10*1000);
-					loginbhi(httpClient);
-				}
-				 html = getHtml(httpClient, url, "utf-8", getCookiesString());
 				new BHIDetailPaser().analyzerPaper(html, url);
+				getRecodPage(httpClient, url);
 				try {
 					Thread.sleep(3000);
 				} catch (InterruptedException e) {
@@ -352,37 +365,50 @@ public class BhiSpider {
 
 	private static void fillPostHeader(String url, HttpPost httpPost,
 			String cookie) {
-		httpPost.setHeader(
-				"User-Agent",
-				"Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.154 Safari/537.36");
+		httpPost.setHeader("User-Agent",
+				"Mozilla/5.0 (Windows NT 5.2; rv:23.0) Gecko/20100101 Firefox/23.0");
 		httpPost.setHeader("Accept",
 				"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 		httpPost.setHeader("Accept-Language",
 				"zh-CN,zh;q=0.8,en-us;q=0.8,en;q=0.6");
 		httpPost.setHeader("Accept-Encoding", "gzip, deflate,sdch");
-		httpPost.setHeader("Host", "www.bhi.com.cn");
+		httpPost.setHeader("Host", getDomain(url));
+		httpPost.setHeader("DHT", "1");
 		httpPost.setHeader("Connection", "keep-alive");
 		httpPost.setHeader("Referer",
-				"http://www.bhi.com.cn/projects/ItemList.aspx?a=1&p=t");
-		httpPost.setHeader("Cache-Control", "max-age=0");
+				"http://projectinfo.bhi.com.cn/Projects/ProjectNList.aspx");
+		httpPost.setHeader("Cache-Control", "private");
 		httpPost.setHeader("Cookie", cookie);
 
 	}
 
 	private static void fillGetHeader(String url, HttpGet httpGet, String cookie) {
-		httpGet.setHeader(
-				"User-Agent",
-				"Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.154 Safari/537.36");
+
+		httpGet.setHeader("User-Agent",
+				"Mozilla/5.0 (Windows NT 5.2; rv:23.0) Gecko/20100101 Firefox/23.0");
 		httpGet.setHeader("Accept",
 				"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 		httpGet.setHeader("Accept-Language",
 				"zh-CN,zh;q=0.8,en-us;q=0.8,en;q=0.6");
 		httpGet.setHeader("Accept-Encoding", "gzip, deflate,sdch");
-		httpGet.setHeader("Host", "www.bhi.com.cn");
+		httpGet.setHeader("Host", getDomain(url));
+		httpGet.setHeader("DHT", "1");
 		httpGet.setHeader("Connection", "keep-alive");
 		httpGet.setHeader("Referer",
-				"http://www.bhi.com.cn/projects/ItemList.aspx?a=1&p=t");
-		httpGet.setHeader("Cache-Control", "max-age=0");
+				"http://projectinfo.bhi.com.cn/Projects/ProjectNList.aspx");
+		httpGet.setHeader("Cache-Control", "private");
 		httpGet.setHeader("Cookie", cookie);
 	}
+
+	private static String getDomain(String url) {
+		String domain = "";
+		try {
+			URL u = new URL(url);
+			domain = u.getHost();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		return domain;
+	}
+
 }
