@@ -153,7 +153,8 @@ public class HttpClientBuilder {
 						.setConnectionManager(
 								poolingHttpClientConnectionManager)
 						.setKeepAliveStrategy(keepAliveStrat)
-						.setRetryHandler(retryHandler)
+						// 不进行重试了
+//						.setRetryHandler(retryHandler)
 						.setDefaultRequestConfig(globalConfig)
 						.setDefaultCookieStore(cookieStore)
 						.setRedirectStrategy(redirectStrategy)
@@ -166,7 +167,8 @@ public class HttpClientBuilder {
 						.setConnectionManager(
 								poolingHttpClientConnectionManager)
 						.setKeepAliveStrategy(keepAliveStrat)
-						.setRetryHandler(retryHandler)
+						//		// 不进行重试了
+						//.setRetryHandler(retryHandler)
 						.setDefaultRequestConfig(globalConfig)
 						.setDefaultCookieStore(cookieStore)
 						.setRedirectStrategy(redirectStrategy).build();

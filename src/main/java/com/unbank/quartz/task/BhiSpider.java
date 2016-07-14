@@ -151,7 +151,7 @@ public class BhiSpider {
 		String tourl = "http://www.bhi.com.cn/Login/login.ashx?prev=";
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("name", "unbank");
-		params.put("pwd", "");
+		params.put("pwd", "zscx2015");
 		params.put("code", checkCode);
 		params.put("method", "popup");
 		post(httpClient, tourl, params, "utf-8", getCookiesString());

@@ -16,6 +16,8 @@
 		<typeAlias alias="BhiConstruction" type="com.unbank.mybatis.vo.BhiConstruction" />
 		<typeAlias alias="BhiEnvironmentalAssessment"
 			type="com.unbank.mybatis.vo.BhiEnvironmentalAssessment" />
+		<typeAlias alias="BhiProData" type="com.unbank.mybatis.vo.BhiProData" />
+			<typeAlias alias="BhiPPP" type="com.unbank.mybatis.vo.BhiPPP" />
 	</typeAliases>
 	<!--数据源配置 这块用 BD2数据库 -->
 	<environments default="development">
@@ -45,5 +47,7 @@
 		<mapper resource="com/unbank/mybatis/mapper/BhiConstructionMapper.xml" />
 		<mapper
 			resource="com/unbank/mybatis/mapper/BhiEnvironmentalAssessmentMapper.xml" />
+		<mapper resource="com/unbank/mybatis/mapper/BhiProDataMapper.xml" />
+				<mapper resource="com/unbank/mybatis/mapper/BhiPPPMapper.xml" />
 	</mappers>
 </configuration> 

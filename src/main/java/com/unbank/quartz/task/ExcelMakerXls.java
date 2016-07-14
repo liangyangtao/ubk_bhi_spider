@@ -39,14 +39,16 @@ import com.unbank.tools.Values;
 
 public class ExcelMakerXls {
 
-/*	public static void main(String[] args) {
+	public static void main(String[] args) {
 		new ClassPathXmlApplicationContext(
 				new String[] { "applicationContext.xml" });
 		String startTime = SimpleTools.getyyyyMMddTimeString(new Date(), 0);
 		String endTime = SimpleTools.getyyyyMMddTimeString(new Date(), 0);
+//		String startTime ="2016-05-24";
+//		String endTime ="2016-05-24";
 		new ExcelMakerXls().makeExcel(startTime, endTime);
 
-	}*/
+	}
 
 	public void makeExcel(String startTime, String endTime) {
 		HSSFWorkbook xwb = new HSSFWorkbook();
@@ -54,9 +56,9 @@ public class ExcelMakerXls {
 		if (isExit) {
 			String filePath = makeExcelFile(startTime, endTime, xwb);
 			System.out.println(filePath);
-			MailSenderInfo mailInfo = fillMailInfo(filePath);
-			MailSender sms = new MailSender();
-			sms.sendHtmlMail(mailInfo);
+//			MailSenderInfo mailInfo = fillMailInfo(filePath);
+//			MailSender sms = new MailSender();
+//			sms.sendHtmlMail(mailInfo);
 		}
 
 	}

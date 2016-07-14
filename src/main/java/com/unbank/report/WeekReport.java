@@ -1,5 +1,6 @@
 package com.unbank.report;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -50,44 +51,56 @@ public class WeekReport {
 		// pro_time >='2015-08-18' and pro_time <='22015-08-19' GROUP BY
 		// pro_area,pro_trade;
 
-		String startTime = "2015-11-16";
-		String endTime = "2015-11-20";
+		String startTime = "2016-05-01";
+		String endTime = "2016-05-31";
 		List<BhiProWithBLOBs> bhiProWithBLOBs = new BhiProReader()
 				.readBhiProReader(startTime, endTime);
 		// 地域
 		Map<String, Integer> area_nums = new HashMap<String, Integer>();
 		Set<String> areaSet = area_nums.keySet();
+		Map<String, Double> area_moneys = new HashMap<String, Double>();
 
 		// 行业
 		Map<String, Integer> trade_nums = new HashMap<String, Integer>();
 		Set<String> tradeSet = trade_nums.keySet();
-
-		// 地域加含有
+		Map<String, Double> trade_moneys = new HashMap<String, Double>();
+		// 地域加行业
 		Map<String, Integer> area_trade_nums = new HashMap<String, Integer>();
 		Set<String> areatradeSet = area_trade_nums.keySet();
+		Map<String, Double> area_trade_moneys = new HashMap<String, Double>();
 
 		for (BhiProWithBLOBs bhiProWithBLOBs2 : bhiProWithBLOBs) {
 			// 地域
 			String area = bhiProWithBLOBs2.getProArea().trim();
+			String money = bhiProWithBLOBs2.getProAssets();
+			money = money.replace("万元", "");
+			Double mm = Double.parseDouble(money);
 			if (areaSet.contains(area)) {
 				area_nums.put(area, area_nums.get(area) + 1);
+				area_moneys.put(area, area_moneys.get(area) + mm);
 			} else {
 				area_nums.put(area, 1);
+				area_moneys.put(area, mm);
 			}
 			// hanye
 			String trade = bhiProWithBLOBs2.getProTrade().trim();
 
 			if (tradeSet.contains(trade)) {
 				trade_nums.put(trade, trade_nums.get(trade) + 1);
+				trade_moneys.put(trade, trade_moneys.get(trade) + mm);
 			} else {
 				trade_nums.put(trade, 1);
+				trade_moneys.put(trade, mm);
 			}
 			// 地域 加hanye
 			if (areatradeSet.contains(area + "&&&" + trade)) {
 				area_trade_nums.put(area + "&&&" + trade,
 						area_trade_nums.get(area + "&&&" + trade) + 1);
+				area_trade_moneys.put(area + "&&&" + trade,
+						area_trade_moneys.get(area + "&&&" + trade) + mm);
 			} else {
 				area_trade_nums.put(area + "&&&" + trade, 1);
+				area_trade_moneys.put(area + "&&&" + trade, mm);
 			}
 		}
 		List<Entry<String, Integer>> areaNumList = new ArrayList<Map.Entry<String, Integer>>(
@@ -122,14 +135,23 @@ public class WeekReport {
 								mapping1.getValue());
 					}
 				});
+		DecimalFormat df = new DecimalFormat("######0.00");
 		for (Map.Entry<String, Integer> mapping : areaNumList) {
-			System.out.println(mapping.getKey() + ":" + mapping.getValue());
+			System.out.print(mapping.getKey() + ":" + mapping.getValue());
+			System.out.println("  "
+					+ df.format(area_moneys.get(mapping.getKey())) + "万元");
 		}
 		for (Map.Entry<String, Integer> mapping : tradeNumList) {
-			System.out.println(mapping.getKey() + ":" + mapping.getValue());
+			System.out.print(mapping.getKey() + ":" + mapping.getValue());
+			System.out.println("  "
+					+ df.format(trade_moneys.get(mapping.getKey())) + "万元");
 		}
 		for (Map.Entry<String, Integer> mapping : area_trade_NumList) {
-			System.out.println(mapping.getKey() + ":" + mapping.getValue());
+			System.out.print(mapping.getKey() + ":" + mapping.getValue());
+			System.out
+					.println("  "
+							+ df.format(area_trade_moneys.get(mapping.getKey()))
+							+ "万元");
 		}
 
 	}
