@@ -72,7 +72,7 @@ public class BhiPPPSpider {
 
 			Map<String, Object> project = (Map<String, Object>) JSONObject
 					.toBean(proObject, Map.class);
-			int id = (int) project.get("Exportid");
+			int id = (Integer) project.get("Exportid");
 			String detailurl = "http://www.bhi.com.cn/project/ProjectDetails.ashx?Exportid="
 					+ id;
 			String detailHtml = getHtml(httpClient, detailurl, "utf-8",
